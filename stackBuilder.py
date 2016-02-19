@@ -1,17 +1,21 @@
 #!/usr/bin/env python
-import subprocess, sys, datetime, shlex, os
+import subprocess, sys, shlex
 from subprocess import Popen
+
 
 class StackBuilder(object):
 
+    def __init__(self):
+        self.update_os_packages()
+        self.upgrade_os_packages()
 
     def update_os_packages(self):
         self.summarize_operation("Updating OS Packages")
-        print subprocess.call(shlex.split("sudo apt-get update"))
+        print subprocess.call(shlex.split("sudo apt-get update -y"))
 
     def upgrade_os_packages(self):
         self.summarize_operation("Upgrading OS Packages")
-        print subprocess.call(shlex.split("sudo apt-get upgrade"))
+        print subprocess.call(shlex.split("sudo apt-get upgrade -y"))
 
     def install_package(self, package):
         package = package.lower()
@@ -31,10 +35,10 @@ class StackBuilder(object):
         print "================ "+ operation +" ================"
         sys.stdout.flush()
 
-    def installBuildDependencies(self):
-        self.update_os_packages() #Must be run or build-essential will return a 404 error
-        self.summarize_operation("Installing Build Dependencies")
+    def python_software_properties(self):
         self.install_package("python-software-properties")
+
+    def build_essential(self):
         self.install_package("build-essential")
 
     def apache(self):
@@ -50,7 +54,7 @@ class StackBuilder(object):
         self.install_package("curl")
 
     def php(self):
-        #We put each package on a new line to improve readability
+        # We put each package on a new line to improve readability
         self.summarize_operation("Installing PHP")
         self.add_repository("ondrej/php5-5.6")
         self.install_package("php5")
@@ -60,7 +64,7 @@ class StackBuilder(object):
         self.install_package("php5-mcrypt")
         self.install_package("php5-cli")
         self.install_package("php5-curl")
-        self.updateOS()
+        self.update_os_packages()
         print subprocess.call(shlex.split("sudo service nginx restart"))
         print subprocess.call(shlex.split("sudo service php5-fpm restart"))
 
@@ -73,14 +77,16 @@ class StackBuilder(object):
 
     def set_mysql_password(self, password):
         command = shlex.split("sudo debconf-set-selections")
-        inputPassword = Popen(command, stdin=subprocess.PIPE)
-        inputPassword.communicate(input="mysql-server mysql-server/root_password password {0}".format(password))
-        inputPasswordConfirm = Popen(command, stdin=subprocess.PIPE)
-        inputPasswordConfirm.communicate(input="mysql-server mysql-server/root_password_again password {0}".format(password))
+        input_password = Popen(command, stdin=subprocess.PIPE)
+        input_password.communicate(input="mysql-server mysql-server/root_password password {0}".format(password))
+        input_password_confirm = Popen(command, stdin=subprocess.PIPE)
+        input_password_confirm.communicate(input="mysql-server mysql-server/root_password_again password {0}".format(password))
 
     def nodejs(self):
         self.summarize_operation("Installing Nodejs")
-        print "curl --silent --location https://deb.nodesource.com/setup_5.x | sudo bash"
+        process = Popen(shlex.split("curl --silent --location https://deb.nodesource.com/setup_5.x"), stdout=subprocess.PIPE)
+        process_stdout = Popen(shlex.split("sudo -E bash -"), stdin=process.stdout)
+        process_stdout.communicate()[0]
         self.install_package("nodejs")
         self.npm_install_globally("npm@latest")
 
