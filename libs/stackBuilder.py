@@ -36,11 +36,16 @@ class StackBuilder(object):
         Args:
             package: the package to be installed
 
+        Notes:
+            The '-o Dpkg::Options::="--force-confold" --force-yes' option does not modify the current config file.
+            The new version is installed with a .dpkg-dist suffix.
+            See https://raphaelhertzog.com/2010/09/21/debian-conffile-configuration-file-managed-by-dpkg/ for more info
+
         Raises:
             CalledProcessError: if the package can't be found
         """
         package = package.lower()
-        command = shlex.split("sudo apt-get install -y " + package)
+        command = shlex.split('sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes -y install ' + package)
         try:
             print subprocess.check_call(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
@@ -155,7 +160,7 @@ class StackBuilder(object):
         Install and then update NodeJS
         """
         self.summarize_operation("Installing Nodejs")
-        process = Popen(shlex.split("curl --silent --location https://deb.nodesource.com/setup_5.x"), stdout=subprocess.PIPE)
+        process = Popen(shlex.split("s"), stdout=subprocess.PIPE)
         process_stdout = Popen(shlex.split("sudo -E bash -"), stdin=process.stdout)
         process_stdout.communicate()[0]
         self.install_package("nodejs")
