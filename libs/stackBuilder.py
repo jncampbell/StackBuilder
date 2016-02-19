@@ -160,7 +160,7 @@ class StackBuilder(object):
         Install and then update NodeJS
         """
         self.summarize_operation("Installing Nodejs")
-        process = Popen(shlex.split("s"), stdout=subprocess.PIPE)
+        process = Popen(shlex.split("curl --silent --location https://deb.nodesource.com/setup_5.x "), stdout=subprocess.PIPE)
         process_stdout = Popen(shlex.split("sudo -E bash -"), stdin=process.stdout)
         process_stdout.communicate()[0]
         self.install_package("nodejs")
