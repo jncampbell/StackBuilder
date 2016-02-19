@@ -7,3 +7,8 @@ from stackBuilder import StackBuilder
 builder = StackBuilder()
 
 # call stackBuilder methods here
+builder.installBuildDependencies()
+builder.nodejs()
+builder.npmInstallGlobally("gulp")
+builder.npmInstallGlobally("bower")
+builder.npmInstall("gulp-sass")
